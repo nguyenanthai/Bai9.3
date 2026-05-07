@@ -1,0 +1,37 @@
+name: CI/CD Automation Build
+
+# Kích hoạt workflow khi có sự kiện push hoặc pull_request
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout mã nguồn
+      uses: actions/checkout@v4
+
+    - name: Thiết lập JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Chạy Maven Build (Test và Package)
+      # Lệnh này sẽ thực thi vòng đời: validate -> compile -> test -> package
+      run: mvn -B test package
+
+    - name: Lưu trữ Artifact (.jar file)
+      uses: actions/upload-artifact@v4
+      # Chỉ upload nếu bước build maven thành công
+      if: success() 
+      with:
+        name: worker-system-jar
+        # Đường dẫn trỏ tới file jar được tạo ra trong thư mục target
+        path: target/*.jar
+        retention-days: 7
