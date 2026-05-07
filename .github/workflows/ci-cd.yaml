@@ -1,6 +1,5 @@
 name: CI/CD Automation Build
 
-# Kích hoạt workflow khi có sự kiện push hoặc pull_request
 on:
   push:
     branches: [ "main" ]
@@ -9,7 +8,13 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # 1. Khai báo Matrix Strategy tại đây
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    # 2. Thay vì fix cứng ubuntu, chạy theo biến os trong matrix
+    runs-on: ${{ matrix.os }}
 
     steps:
     - name: Checkout mã nguồn
@@ -23,15 +28,13 @@ jobs:
         cache: maven
 
     - name: Chạy Maven Build (Test và Package)
-      # Lệnh này sẽ thực thi vòng đời: validate -> compile -> test -> package
       run: mvn -B test package
 
     - name: Lưu trữ Artifact (.jar file)
       uses: actions/upload-artifact@v4
-      # Chỉ upload nếu bước build maven thành công
       if: success() 
       with:
-        name: worker-system-jar
-        # Đường dẫn trỏ tới file jar được tạo ra trong thư mục target
+        # Thêm tên hệ điều hành vào file zip để không bị ghi đè
+        name: worker-system-jar-${{ matrix.os }} 
         path: target/*.jar
         retention-days: 7
