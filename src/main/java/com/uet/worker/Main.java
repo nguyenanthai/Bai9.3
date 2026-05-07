@@ -7,7 +7,7 @@ public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
-        //Bắt đầu chương trình, chạy test 2 (sửa để chạy test 2)
+        //Bắt đầu chương trình, chạy test 1
         logger.info("Chương trình bắt đầu.");
         //Giữ nguyên như cũ
 
