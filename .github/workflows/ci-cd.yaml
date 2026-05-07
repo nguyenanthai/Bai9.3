@@ -1,5 +1,6 @@
 name: CI/CD Automation Build
 
+# Kích hoạt workflow khi có sự kiện push hoặc pull_request vào nhánh main
 on:
   push:
     branches: [ "main" ]
@@ -8,12 +9,13 @@ on:
 
 jobs:
   build:
-    # 1. Khai báo Matrix Strategy tại đây
+    # Bài 4: Cấu hình Matrix Strategy để chạy đồng thời trên 3 hệ điều hành
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+      # set fail-fast là false để nếu một OS lỗi, các OS khác vẫn tiếp tục chạy
+      fail-fast: false
     
-    # 2. Thay vì fix cứng ubuntu, chạy theo biến os trong matrix
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -27,14 +29,26 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Chạy Maven Build (Test và Package)
-      run: mvn -B test package
+    # Bài 5: Chạy lệnh verify. 
+    # Lệnh này sẽ thực hiện: Checkstyle -> Unit Test -> JaCoCo Report -> JaCoCo Check (80%)
+    - name: Chạy Maven Build và Kiểm tra chất lượng (Verify)
+      run: mvn -B verify
 
+    # Lưu trữ file thực thi .jar sau khi build thành công
     - name: Lưu trữ Artifact (.jar file)
       uses: actions/upload-artifact@v4
       if: success() 
       with:
-        # Thêm tên hệ điều hành vào file zip để không bị ghi đè
-        name: worker-system-jar-${{ matrix.os }} 
+        name: worker-system-jar-${{ matrix.os }}
         path: target/*.jar
+        retention-days: 7
+
+    # Bài 5: Lưu trữ báo cáo độ bao phủ mã nguồn (JaCoCo HTML)
+    # Sử dụng "if: always()" để luôn có báo cáo ngay cả khi build bị fail do coverage thấp
+    - name: Lưu trữ Báo cáo JaCoCo (HTML)
+      uses: actions/upload-artifact@v4
+      if: always() 
+      with:
+        name: jacoco-report-${{ matrix.os }}
+        path: target/site/jacoco/
         retention-days: 7
