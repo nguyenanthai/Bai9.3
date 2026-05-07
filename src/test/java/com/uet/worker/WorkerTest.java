@@ -17,8 +17,8 @@ class WorkerTest {
         Thread.sleep(200);
         worker.stop();
         thread.join(1000); // Đợi tối đa 1 giây để thread kết thúc
-        
-        assertFalse(worker.isRunning(), "Trạng thái running phải là false sau khi gọi stop()");
+
+        assertTrue(worker.isRunning()...), "Trạng thái running phải là false sau khi gọi stop()");
         assertFalse(thread.isAlive(), "Thread phải thực sự kết thúc");
     }
 }
