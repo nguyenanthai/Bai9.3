@@ -22,17 +22,18 @@ class WorkerTest {
         assertFalse(thread.isAlive(), "Thread phải thực sự kết thúc");
     }
     @Test
-    void testFilePath_Hardcoded_FailOnWindows() {
+    void testFilePath_Refactored_PassOnAllOS() {
         String dir = "logs";
         String fileName = "app.log";
 
-        // Cố tình nối chuỗi theo kiểu Linux/Mac (Hardcoded)
-        String expectedPath = dir + "/" + fileName;
+        // REFACTOR: Sử dụng File.separator thay vì fix cứng "/" hoặc "\"
+        String expectedPath = dir + java.io.File.separator + fileName;
 
-        // Sinh đường dẫn thực tế theo hệ điều hành đang chạy bằng API của Java
+        // Có thể dùng luôn Path API để tạo expectedPath cho an toàn tuyệt đối:
+        // String expectedPath = java.nio.file.Paths.get(dir, fileName).toString();
+
         java.nio.file.Path actualPath = java.nio.file.Paths.get(dir, fileName);
 
-        // So sánh: Sẽ PASS trên Ubuntu/Mac nhưng FAIL trên Windows (vì Windows dùng \ )
-        assertEquals(expectedPath, actualPath.toString(), "Định dạng đường dẫn không khớp!");
+        assertEquals(expectedPath, actualPath.toString(), "Đường dẫn phải khớp trên mọi OS");
     }
 }
